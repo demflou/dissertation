@@ -11,7 +11,7 @@ Distributed Task Management at the Edge of the Network
 - python Simulation.py -h (for help)
 - python Simulation.py -c <#columns> -r <#rows> -n <#nodes>
 
-# TASKS
+# Tasks
 
 
 # Feature Learning
