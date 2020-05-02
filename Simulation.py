@@ -19,10 +19,10 @@ class dNode:
 
 def printNode (dn):
     print ('ID: ', dn.id)
-    #print ('COUNTER: ', dn.cntr)
-    #print ('DATAFRAME')
-    #print ('-'*100)
-    #print (dn.data)
+    print ('COUNTER: ', dn.cntr)
+    print ('DATAFRAME')
+    print ('-'*100)
+    print (dn.data)
     print ('AVG: ', dn.avg_)
     print ('Score: ', dn.dScore)
     #print ('SIMILARITY: ', dn.similarity)
@@ -92,11 +92,12 @@ def main(argv):
         t_df = pd.DataFrame(dfData.iloc[(n*rows_per_node)+1:((n+1)*rows_per_node)+1,:])
         ListNodes_.append(dNode(n, t_df, columns, rows_per_node))
 
+    # Read the rest of the DataFrame 
+
     # Print all Nodes
     for obj in ListNodes_:
         classify_df(obj, columns, rows)
         printNode(obj)
-
 
 
 if __name__ == "__main__":
