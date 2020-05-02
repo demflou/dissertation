@@ -12,7 +12,7 @@ Distributed Task Management at the Edge of the Network
 - python Simulation.py -c <#columns> -r <#rows> -n <#nodes>
 
 # Tasks
-
+- 
 
 # Feature Learning
 I classify the given data from [d0, dcolumns-1]. The last columns I implement it as a label with values 0 or 1.
