@@ -1,11 +1,15 @@
 import sys
 import getopt
+import random
+import datetime
 import pandas as pd
+import numpy as np
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 
-rows_per_node = 100
-important_cols = 2
+rows_per_node = 100 #initial rows per node
+important_cols = 2 #num of important features
+phi = 0.65 #probability for store in local 1-phi
 
 class dNode:
     def __init__(self, n, df, noc, nor):
@@ -14,8 +18,9 @@ class dNode:
         self.cntr = nor
         self.avg_ = [-1] * noc
         self.dScore = [-1] * important_cols
+        self.report_time = datetime.datetime.now()
         calc_avg(self) #get the avg of imported data
-        #self.similarity = [-1] * non
+        self.similarity = [-1] * noc
 
 def printNode (dn):
     print ('ID: ', dn.id)
@@ -25,7 +30,8 @@ def printNode (dn):
     print (dn.data)
     print ('AVG: ', dn.avg_)
     print ('Score: ', dn.dScore)
-    #print ('SIMILARITY: ', dn.similarity)
+    print ('Report Time: ', dn.report_time)
+    print ('SIMILARITY: ', dn.similarity)
 
 def calc_avg(dn):
     res = dn.data.mean(axis=0).round(3)
@@ -51,6 +57,7 @@ def classify_df(dn, noc, nor):
     temp = featureScores.nlargest(important_cols, 'Score')  # print n best features
     for i in range(important_cols):
         dn.dScore[i] = temp['Dimensions'].index[i]
+
 
 def main(argv):
     columns = -1
@@ -95,8 +102,26 @@ def main(argv):
     # Read the rest of the DataFrame
     for i in range((num_of_nodes*rows_per_node)+1, len(dfData)):
         new_row = dfData.iloc[[i]]
+        #print new_row
 
-        print new_row
+        #Calculate the Similarity
+
+        # print std_row
+        for i in range(num_of_nodes):
+            a = []
+            a.append(ListNodes_[i].avg_[2])
+            a.append(new_row.iloc[0,2])
+            print a
+            Similarity[i] = np.std(a)
+        print (Similarity)
+
+        if (random.random() <= phi):
+            #REMOTE SAVE
+            print 'TRUE'
+        else:
+            #LOCAL SAVE
+            print 'FALSE'
+
 
     # Print all Nodes
     #for obj in ListNodes_:
