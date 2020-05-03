@@ -92,12 +92,16 @@ def main(argv):
         t_df = pd.DataFrame(dfData.iloc[(n*rows_per_node)+1:((n+1)*rows_per_node)+1,:])
         ListNodes_.append(dNode(n, t_df, columns, rows_per_node))
 
-    # Read the rest of the DataFrame 
+    # Read the rest of the DataFrame
+    for i in range((num_of_nodes*rows_per_node)+1, len(dfData)):
+        new_row = dfData.iloc[[i]]
+
+        print new_row
 
     # Print all Nodes
-    for obj in ListNodes_:
-        classify_df(obj, columns, rows)
-        printNode(obj)
+    #for obj in ListNodes_:
+    #    classify_df(obj, columns, rows)
+    #    printNode(obj)
 
 
 if __name__ == "__main__":
