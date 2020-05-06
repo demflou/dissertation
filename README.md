@@ -19,7 +19,7 @@ Distributed Task Management at the Edge of the Network
 - Calculate the similarity of each dimension for each Node using Standard Deviation (low value:close to mean, high value:spread out) [DONE]
 - For every 50 new saved rows in Node Classify again, calculate the average and the similarity and update the report_time [DONE]
 - Get a number between 0,1 with probability and if it is greater than 0.75 save localy else save remotely [DONE]
-- Use a Gaussian probability function to find probability for each Node produce the specific new row Gaussian = g(di)*g(dj) (probability di and dj produce by Node Ni)
+- Use a Normal distribution (Gaussian probability function) to find probability for each Node produce the specific new row Gaussian = g(di)*g(dj) (probability di and dj produce by Node Ni)
 - With a reward function find the correct Node to save the row if (P(Ni) > threshold) then {reward += 10} if (cost(Ni) > threshold) then {reward+=10}
 - Calculate the total reward using a reverse sigmod function 1/(1+exp(20x-20))
 - total_reward = 1/(1+exp(a*(report_time)+b*(reward)))
