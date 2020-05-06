@@ -15,7 +15,7 @@ Distributed Task Management at the Edge of the Network
 - Split 100 rows in each Node [DONE]
 - Classify the data of each Node [DONE]
 - Get the most important dimensions [DONE]
-- Calculate the average of each dimension for each Node [Done]
+- Calculate the average of each dimension for each Node [DONE]
 - Calculate the similarity of each dimension for each Node using Standard Deviation
 - For every 50 new saved rows in Node Classify again, calculate the average and the similarity and update the report_time
 - Get a number between 0,1 with probability and if it is greater than 0.65 save localy else save remotely
