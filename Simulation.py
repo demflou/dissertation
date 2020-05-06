@@ -8,7 +8,7 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 
 rows_per_node = 100 #initial rows per node
-important_cols = 2 #num of important features
+important_cols = 3 #num of important features
 phi = 0.65 #probability for store in local 1-phi
 
 class dNode:
@@ -21,6 +21,8 @@ class dNode:
         self.report_time = datetime.datetime.now()
         calc_avg(self) #get the avg of imported data
         self.similarity = [-1] * noc
+        classify_df(self, noc)
+
 
 def printNode (dn):
     print ('ID: ', dn.id)
@@ -40,11 +42,11 @@ def calc_avg(dn):
         dn.avg_[i] = res[i]
     return dn
 
-def classify_df(dn, noc, nor):
+def classify_df(dn, noc):
     # DATA CONVERTING
 
     # Convert the data to be able to classify
-    X = dn.data.iloc[:, 0:noc-2]
+    X = dn.data.iloc[:, :noc-1]
     y = dn.data.iloc[:, noc-1]
 
     # Extract the 2 most important columns
@@ -92,7 +94,7 @@ def main(argv):
     dfData = pd.read_csv('data.csv', sep=',', header=0)
 
     ListNodes_ = []
-    Similarity = [-1] * num_of_nodes
+
 
     # Split 100 rows at each node
     for n in range(num_of_nodes):
@@ -101,33 +103,32 @@ def main(argv):
 
     # Read the rest of the DataFrame
     for i in range((num_of_nodes*rows_per_node)+1, len(dfData)):
+        Similarity = [-1] * num_of_nodes
         new_row = dfData.iloc[[i]]
-        #print new_row
+        print new_row
 
         #Calculate the Similarity
-
-        # print std_row
-        for i in range(num_of_nodes):
+        for node in ListNodes_:
+            print node.dScore
             a = []
-            a.append(ListNodes_[i].avg_[2])
-            a.append(new_row.iloc[0,2])
+            for i in node.dScore:
+                a.append(node.avg_[i])
+                a.append(new_row.iloc[0,i])
+                print new_row.iloc[0,i], i
             print a
-            Similarity[i] = np.std(a)
-        print (Similarity)
+            res = np.std(a, ddof=1)
+            Similarity[node.id] = round(res,3)
+        print Similarity
 
+
+        '''
         if (random.random() <= phi):
             #REMOTE SAVE
             print 'TRUE'
         else:
             #LOCAL SAVE
             print 'FALSE'
-
-
-    # Print all Nodes
-    #for obj in ListNodes_:
-    #    classify_df(obj, columns, rows)
-    #    printNode(obj)
-
+        '''
 
 if __name__ == "__main__":
     main(sys.argv[1:])
