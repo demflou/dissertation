@@ -9,7 +9,7 @@ from sklearn.feature_selection import chi2
 
 rows_per_node = 100 #initial rows per node
 important_cols = 3 #num of important features
-phi = 0.65 #probability for store in local 1-phi
+phi = 0.75 #probability for store in local 1-phi
 
 class dNode:
     def __init__(self, n, df, noc, nor):
@@ -105,30 +105,25 @@ def main(argv):
     for i in range((num_of_nodes*rows_per_node)+1, len(dfData)):
         Similarity = [-1] * num_of_nodes
         new_row = dfData.iloc[[i]]
-        print new_row
+        #print new_row
+        if (random.random() <= phi):
+            #REMOTE SAVE
+            print 'REMOTE'
+        else:
+            #LOCAL SAVE
+            save_in = random.randint(0, num_of_nodes-1)
+            print 'LOCAL'
 
         #Calculate the Similarity
         for node in ListNodes_:
-            print node.dScore
             a = []
             for i in node.dScore:
                 a.append(node.avg_[i])
                 a.append(new_row.iloc[0,i])
-                print new_row.iloc[0,i], i
-            print a
             res = np.std(a, ddof=1)
             Similarity[node.id] = round(res,3)
-        print Similarity
 
 
-        '''
-        if (random.random() <= phi):
-            #REMOTE SAVE
-            print 'TRUE'
-        else:
-            #LOCAL SAVE
-            print 'FALSE'
-        '''
 
 if __name__ == "__main__":
     main(sys.argv[1:])
