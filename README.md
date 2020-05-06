@@ -16,7 +16,7 @@ Distributed Task Management at the Edge of the Network
 - Classify the data of each Node [DONE]
 - Get the most important dimensions [DONE]
 - Calculate the average of each dimension for each Node [DONE]
-- Calculate the similarity of each dimension for each Node using Standard Deviation (low value:close to mean, high value:spread out)[DONE]
+- Calculate the similarity of each dimension for each Node using Standard Deviation (low value:close to mean, high value:spread out) [DONE]
 - For every 50 new saved rows in Node Classify again, calculate the average and the similarity and update the report_time
 - Get a number between 0,1 with probability and if it is greater than 0.65 save localy else save remotely
 - Use a Gaussian probability function to find probability for each Node produce the specific new row Gaussian = g(di)*g(dj) (probability di and dj produce by Node Ni)
