@@ -1,16 +1,25 @@
 import sys
 import getopt
 import random
-from datetime import datetime, timedelta
+import math
 import pandas as pd
 import numpy as np
+import scipy as scp
+from datetime import datetime, timedelta
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 
 rows_per_node = 100 #initial rows per node
-important_cols = 3 #num of important features
+important_cols = 3 #number of important features
 phi = 0.75 #probability phi for store in remotely else locally
 update_stats = 50 #update Node statistics every up update_stats new rows
+transfer_cost = 1 #transfer_cost
+prob_thres = 0.40 #Gaussian probability threshold
+cost_thres = 30 #Transfer cost threshold
+similar_thres = 0.10 #Similarity threshold
+AA = 1 #value <a> in reverse sigmod function
+BB = 1 #value <b> in reverse sigmod function
+num_of_cluster = 2 #Number of clusters with similar nodes
 
 class dNode:
     def __init__(self, n, df, noc, nor):
@@ -64,7 +73,6 @@ def classify_df(dn):
         dn.dScore[i] = temp['Dimensions'].index[i]
 
 def insert_new_row(dn, new_row):
-    printNode(dn)
     dn.data = dn.data.append(new_row)
     print 'New row inserted correctly.'
     dn.nor+=1
@@ -74,7 +82,6 @@ def insert_new_row(dn, new_row):
         dn.report_time = datetime.now()
         classify_df(dn)
         calc_avg(dn)
-        printNode(dn)
 
 def main(argv):
     columns = -1
@@ -106,7 +113,8 @@ def main(argv):
 
 
     # Read the given data
-    dfData = pd.read_csv('data.csv', sep=',', header=0)
+    #dfData = pd.read_csv('~/Documents/My DI/Metaptixiako/Dissertation/Dataset/sofia-air-quality-dataset/2017-07_bme280sof.csv', sep=',', header=0)
+    dfData = pd.read_csv('~/PycharmProjects/Dissertation/data.csv', sep=',', header=0)
 
     ListNodes_ = []
 
@@ -118,37 +126,46 @@ def main(argv):
     # Read the rest of the DataFrame
     for i in range((num_of_nodes*rows_per_node)+1, len(dfData)):
         Similarity = [-1] * num_of_nodes
+        Gauss_prob = [1] * num_of_nodes
+        rewards = [0] * num_of_nodes
+        cost = [transfer_cost] * num_of_nodes
         new_row = dfData.iloc[[i]]
         if (random.random() <= phi):
             #REMOTE SAVE
             print ('REMOTE SAVE')
-            
+            for node in ListNodes_:
+                cost[node.id] = cost[node.id]*random.randint(1, 75)
+                a = []
+                #Calculate the Similarity
+                for j in node.dScore:
+                    a.append(node.avg_[j])
+                    a.append(new_row.iloc[0,j])
+                res = np.std(a, ddof=1)
+                Similarity[node.id] = round(res,3)
+                #Calculate Gaussian
+                for g in xrange (0, len(a), 2):
+                    res = Gauss_prob[node.id] * scp.stats.norm(a[g], 0.5).pdf(a[g+1])
+                    Gauss_prob[node.id] = round(res,2)
+            print 'GAUSS', Gauss_prob
+            print 'SIMILARITY', Similarity
+            r = 0
+            for node in ListNodes_:
+                # Calculate the report_time passed
+                now = datetime.now()
+                time_passed = (now - ListNodes_[0].report_time)
+                if Gauss_prob[node.id] > prob_thres:
+                    r += 0.5
+                if cost[node.id] > cost_thres:
+                    r += 0.15
+                if Similarity[node.id] < similar_thres:
+                    r += 0.35
+                rewards[node.id] = 1 / (1 + math.exp((AA*time_passed.total_seconds())+(BB*r)))
+            print rewards
         else:
             #LOCAL SAVE
             save_in = random.randint(0, num_of_nodes-1)
             print ('LOCAL SAVE in Node', save_in)
             insert_new_row(ListNodes_[save_in], new_row)
 
-        #Calculate the Similarity
-        for node in ListNodes_:
-            a = []
-            for i in node.dScore:
-                a.append(node.avg_[i])
-                a.append(new_row.iloc[0,i])
-            res = np.std(a, ddof=1)
-            Similarity[node.id] = round(res,3)
-
-    #Calculate the report_time passed
-    '''
-        if(ListNodes_[0].report_time > ListNodes_[1].report_time):
-        print 'Node 0 is greater'
-        print 'NODE 0: ', ListNodes_[0].report_time
-        now = datetime.now()
-        print 'NOW: ', now
-        print (now - ListNodes_[0].report_time)
-        time_passed = (now - ListNodes_[0].report_time)
-        if (time_passed > timedelta(microseconds=80000)):
-            print "TOO LATE"
-    '''
 if __name__ == "__main__":
     main(sys.argv[1:])
