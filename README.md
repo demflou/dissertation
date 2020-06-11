@@ -29,3 +29,6 @@ Distributed Task Management at the Edge of the Network
 I classify the given data from [d0, dcolumns-1]. The last columns I implement it as a label with values 0 or 1.
 Use Chi-square test to check how much important is each feature to y and return the k-most important features.
 Then i use SelectKbest function to predict the most important dimensions of the row so i will check them later for import a new row into a node.
+
+#Clustering
+https://towardsdatascience.com/clustering-with-k-means-1e07a8bfb7ca
