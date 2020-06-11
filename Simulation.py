@@ -12,9 +12,9 @@ from sklearn.feature_selection import chi2
 rows_per_node = 100 #initial rows per node
 important_cols = 3 #number of important features
 phi = 0.75 #probability phi for store in remotely else locally
-update_stats = 50 #update Node statistics every up update_stats new rows
+update_stats = 10 #update Node statistics every up update_stats new rows
 transfer_cost = 1 #transfer_cost
-prob_thres = 0.40 #Gaussian probability threshold
+prob_thres = 0.38 #Gaussian probability threshold
 cost_thres = 30 #Transfer cost threshold
 similar_thres = 0.10 #Similarity threshold
 AA = 1 #value <a> in reverse sigmod function
@@ -36,12 +36,13 @@ class dNode:
 
 
 def printNode (dn):
+    print ('-'*100)
     print ('ID: ', dn.id)
     print ('ROW COUNTER: ', dn.nor)
     print ('COLUMNS COUNTER: ', dn.noc)
     print ('DATAFRAME')
-    print ('-'*100)
-    print (dn.data)
+    #print ('-'*100)
+    #print (dn.data)
     print ('AVG: ', dn.avg_)
     print ('Score: ', dn.dScore)
     print ('Report Time: ', dn.report_time)
@@ -82,6 +83,10 @@ def insert_new_row(dn, new_row):
         dn.report_time = datetime.now()
         classify_df(dn)
         calc_avg(dn)
+
+def cluster_dns(cl_arr, dn_avg):
+    dn_avg
+    print 'cluster'
 
 def main(argv):
     columns = -1
@@ -128,11 +133,14 @@ def main(argv):
         Similarity = [-1] * num_of_nodes
         Gauss_prob = [1] * num_of_nodes
         rewards = [0] * num_of_nodes
+        dn_avg = [0] * num_of_nodes
+        cl_arr = []
         cost = [transfer_cost] * num_of_nodes
         new_row = dfData.iloc[[i]]
         if (random.random() <= phi):
             #REMOTE SAVE
             print ('REMOTE SAVE')
+            #Dame prepei na allaksi to for pou kato kai na kamo for pano se ena cluster me ta simantika nodes
             for node in ListNodes_:
                 cost[node.id] = cost[node.id]*random.randint(1, 75)
                 a = []
@@ -144,8 +152,9 @@ def main(argv):
                 Similarity[node.id] = round(res,3)
                 #Calculate Gaussian
                 for g in xrange (0, len(a), 2):
-                    res = Gauss_prob[node.id] * scp.stats.norm(a[g], 0.5).pdf(a[g+1])
+                    res = 1-(Gauss_prob[node.id] * scp.stats.norm(a[g], 0.4).pdf(a[g+1]))
                     Gauss_prob[node.id] = round(res,2)
+                printNode(node)
             print 'GAUSS', Gauss_prob
             print 'SIMILARITY', Similarity
             r = 0
