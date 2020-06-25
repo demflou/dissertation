@@ -85,6 +85,10 @@ def insert_new_row(dn, new_row):
         calc_avg(dn)
 
 def cluster_dns(cl_arr, dn_avg):
+    # cluster the nodes with avg of the specific column
+    # save the top K nodes in a list
+    # for loop for each node
+    # decide for save local or remote
     dn_avg
     print 'cluster'
 
