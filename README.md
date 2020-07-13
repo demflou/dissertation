@@ -32,3 +32,11 @@ Then i use SelectKbest function to predict the most important dimensions of the 
 
 # Clustering
 https://towardsdatascience.com/clustering-with-k-means-1e07a8bfb7ca
+
+# Graphs
+- Metrikes poiotitas -> Solidity standard deviatior, plithos komvon partition
+- Metrikes xronos -> poso xrono gia na apofasisei
+- Plithos Komvon
+- posa cluster needed
+- incluster distance prepei na einai megali
+
