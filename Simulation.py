@@ -2,13 +2,15 @@ import sys
 import getopt
 import random
 import math
+
 import pandas as pd
 import numpy as np
 import scipy as scp
-from datetime import datetime, timedelta
+from datetime import datetime
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.cluster import KMeans
+from sklearn.metrics.pairwise import euclidean_distances
 
 rows_per_node = 100 #initial rows per node
 important_cols = 3 #number of important features
@@ -20,7 +22,7 @@ cost_thres = 30 #Transfer cost threshold
 similar_thres = 0.10 #Similarity threshold
 AA = 1 #value <a> in reverse sigmod function
 BB = 1 #value <b> in reverse sigmod function
-num_of_cluster = 20 #Number of clusters with similar nodes
+num_of_cluster = 3 #Number of clusters with similar nodes
 kmeans = None
 
 class dNode:
@@ -106,6 +108,8 @@ def cluster_dns(cl_arr, pin, new_row):
     # learn the labels and the means
     labels = kmeans.predict(pin)  # labels of shape [1000,] with values 0<= i <= 9
     centroids = kmeans.cluster_centers_  # means of shape [10,]
+    edist = euclidean_distances(kmeans.cluster_centers_)
+    print "Incluster Distance = ", edist
     new_insert = kmeans.predict (new_row)
     print 'New Row belongs to cluster No.:', new_insert
 
@@ -150,7 +154,7 @@ def main(argv):
 
     # Read the given data
     #dfData = pd.read_csv('~/Documents/My DI/Metaptixiako/Dissertation/Dataset/sofia-air-quality-dataset/2017-07_bme280sof.csv', sep=',', header=0)
-    dfData = pd.read_csv('~/PycharmProjects/Dissertation/data25k.csv', sep=',', header=0)
+    dfData = pd.read_csv('~/PycharmProjects/Dissertation/data.csv', sep=',', header=0)
 
     ListNodes_ = []
     dn_avg = []
