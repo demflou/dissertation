@@ -2,7 +2,7 @@ import sys
 import getopt
 import random
 import math
-
+import time
 import pandas as pd
 import numpy as np
 import scipy as scp
@@ -22,8 +22,7 @@ cost_thres = 30 #Transfer cost threshold
 similar_thres = 0.10 #Similarity threshold
 AA = 1 #value <a> in reverse sigmod function
 BB = 1 #value <b> in reverse sigmod function
-num_of_cluster = 3 #Number of clusters with similar nodes
-kmeans = None
+num_of_cluster = 2 #Number of clusters with similar nodes
 
 class dNode:
     def __init__(self, n, df, noc, nor):
@@ -68,7 +67,7 @@ def classify_df(dn):
     X = dn.data.iloc[:, :dn.noc-1]
     y = dn.data.iloc[:, dn.noc-1]
 
-    # Extract the 2 most important columns
+    # Extract the K most important columns
     topD = SelectKBest(score_func=chi2, k=important_cols)
     fit = topD.fit(X, y)
     dfscores = pd.DataFrame(fit.scores_)
@@ -81,11 +80,11 @@ def classify_df(dn):
 
 def insert_new_row(dn, new_row):
     dn.data = dn.data.append(new_row)
-    print 'New row inserted correctly.'
+    #print 'New row inserted correctly.'
     dn.nor+=1
     if (dn.nor % update_stats == 0):
         #Need to Update Node Stats
-        print 'Updating Node ', dn.id
+        #print 'Updating Node ', dn.id
         dn.report_time = datetime.now()
         classify_df(dn)
         calc_avg(dn)
@@ -94,7 +93,6 @@ def init_cluster(ListNodes):
     pin = []
     for node in ListNodes:
         pin.append(node.avg_)
-
     return pin
 
 def cluster_dns(cl_arr, pin, new_row):
@@ -109,18 +107,17 @@ def cluster_dns(cl_arr, pin, new_row):
     labels = kmeans.predict(pin)  # labels of shape [1000,] with values 0<= i <= 9
     centroids = kmeans.cluster_centers_  # means of shape [10,]
     edist = euclidean_distances(kmeans.cluster_centers_)
-    print "Incluster Distance = ", edist
+    #print "Incluster Distance = ", edist
     new_insert = kmeans.predict (new_row)
-    print 'New Row belongs to cluster No.:', new_insert
+    #print 'New Row belongs to cluster No.:', new_insert
 
-    print '-------LABEL CLUSTER---------'
-    print labels
+    #print '-------LABEL CLUSTER---------'
+    #print labels
     for cl in range (0, num_of_cluster):
         temp_cl_arr = np.where(labels == cl)
         cl_arr.append(temp_cl_arr[0])
-    print 'INDEX OF CLUSTER: ', cl_arr
+    #print 'INDEX OF CLUSTER: ', cl_arr
     return new_insert
-
 
 def main(argv):
 
@@ -155,7 +152,6 @@ def main(argv):
     # Read the given data
     #dfData = pd.read_csv('~/Documents/My DI/Metaptixiako/Dissertation/Dataset/sofia-air-quality-dataset/2017-07_bme280sof.csv', sep=',', header=0)
     dfData = pd.read_csv('~/PycharmProjects/Dissertation/data.csv', sep=',', header=0)
-
     ListNodes_ = []
     dn_avg = []
 
@@ -164,6 +160,12 @@ def main(argv):
         t_df = pd.DataFrame(dfData.iloc[(n*rows_per_node)+1:((n+1)*rows_per_node)+1,:])
         ListNodes_.append(dNode(n, t_df, columns, rows_per_node))
     pin = init_cluster(ListNodes_)
+    kmeans = KMeans(n_clusters=num_of_cluster, init='k-means++', max_iter=300, n_init=10, random_state=0)
+    kmeans.fit(pin)  # data is of shape [1000,]
+    # learn the labels and the means
+    labels = kmeans.predict(pin)  # labels of shape [1000,] with values 0<= i <= 9
+    centroids = kmeans.cluster_centers_  # means of shape [10,]
+    edist = euclidean_distances(kmeans.cluster_centers_)
     # Read the rest of the DataFrame
     for i in range((num_of_nodes*rows_per_node)+1, len(dfData)):
         Similarity = [-1] * num_of_nodes
@@ -175,8 +177,12 @@ def main(argv):
         if (random.random() <= phi):
             #REMOTE SAVE
             print ('REMOTE SAVE')
-            cluster_id = cluster_dns(cl_arr, pin, new_row)
-            print 'Cluster includes Nodes: ', cl_arr[cluster_id[0]]
+            #cluster_id = cluster_dns(cl_arr, pin, new_row)
+            cluster_id = kmeans.predict(new_row)
+            for cl in range(0, num_of_cluster):
+                temp_cl_arr = np.where(labels == cl)
+                cl_arr.append(temp_cl_arr[0])
+            #print 'Cluster includes Nodes: ', cl_arr[cluster_id[0]]
             for idN in cl_arr[cluster_id[0]]:
             #Dame prepei na allaksi to for pou kato kai na kamo for pano se ena cluster me ta simantika nodes
                 node = ListNodes_[idN]
@@ -209,15 +215,15 @@ def main(argv):
                 if Similarity[node.id] < similar_thres:
                     r += 0.35
                 rewards[node.id] = 1 / (1 + math.exp((AA*time_passed.total_seconds())+(BB*r)))
-                printNode(node)
+                #printNode(node)
 
             #insert data into node
             insert_new_row(ListNodes_[rewards.index(max(rewards))], new_row)
 
             print 'Insert data to: ', ListNodes_[rewards.index(max(rewards))].id
-            print 'GAUSS', Gauss_prob
-            print 'SIMILARITY', Similarity
-            print rewards
+            #print 'GAUSS', Gauss_prob
+            #print 'SIMILARITY', Similarity
+            #print rewards
 
         else:
             #LOCAL SAVE
@@ -228,4 +234,6 @@ def main(argv):
         print '>' * 100
 
 if __name__ == "__main__":
+    start_time = time.time()
     main(sys.argv[1:])
+    print("------%s seconds------"%(time.time() - start_time))
