@@ -28,6 +28,7 @@ def main(argv):
             minNum = int(arg)
         elif opt in ("-mx", "--max"):
             maxNum = int(arg)
+
     if ((columns < 1) or (rows < 1)):
         print 'ERROR!! Wrong given values.'
         print 'Columns and Rows must be greater than 0'
@@ -44,7 +45,7 @@ def main(argv):
     with open('data.csv', 'wb') as file:
         writer = csv.writer(file, delimiter = ',')
         writer.writerow(header);
-        for i in range (rows):
+        for i in range(rows):
             rec = []
             for j in range(columns):
                 if (j == columns-1):
@@ -52,7 +53,7 @@ def main(argv):
                 else:
                     rec.append(round(random.random(), 2))
             writer.writerow(rec)
-
+    file.close()
 
 if __name__ == '__main__':
     main(sys.argv[1:])
