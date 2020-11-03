@@ -14,7 +14,7 @@ def main(argv):
         writer.writerow(dfData.columns)
         for i in range (0, rows):
             #print dfData.iloc[i][10]
-            if (dfData.iloc[i][10] >= 50.0):
+            if (dfData.iloc[i][9] != 0):
                 res = 1
                 c1+=1
                 #print res, c1
@@ -22,7 +22,7 @@ def main(argv):
                 res = 0
                 c0+=1
                 #print res, c0
-            dfData["new_column"] = res
+            dfData["rain"] = res
             writer.writerow(dfData.iloc[i])
     file.close()
 
