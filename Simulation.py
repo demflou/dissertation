@@ -15,14 +15,14 @@ from sklearn.metrics.pairwise import euclidean_distances
 rows_per_node = 100 #initial rows per node
 important_cols = 3 #number of important features
 phi = 0.75 #probability phi for store in remotely else locally
-update_stats = 10 #update Node statistics every up update_stats new rows
+update_stats = 25 #update Node statistics every up update_stats new rows
 transfer_cost = 1 #transfer_cost
 prob_thres = 0.38 #Gaussian probability threshold
 cost_thres = 30 #Transfer cost threshold
 similar_thres = 0.10 #Similarity threshold
 AA = 1 #value <a> in reverse sigmod function
 BB = 1 #value <b> in reverse sigmod function
-num_of_cluster = 2 #Number of clusters with similar nodes
+num_of_cluster = 12 #Number of clusters with similar nodes
 
 class dNode:
     def __init__(self, n, df, noc, nor):
@@ -101,13 +101,16 @@ def cluster_dns(cl_arr, pin, new_row):
     # for loop for node cluster to remote save
     temp_cl_arr = []
 
-    kmeans = KMeans(n_clusters=num_of_cluster, init='k-means++', max_iter=300, n_init=10, random_state=0)
+    kmeans = KMeans(n_clusters=num_of_cluster, init='k-means++', max_iter=300, n_init=10, random_state=1)
     kmeans.fit(pin)  # data is of shape [1000,]
     # learn the labels and the means
     labels = kmeans.predict(pin)  # labels of shape [1000,] with values 0<= i <= 9
     centroids = kmeans.cluster_centers_  # means of shape [10,]
     edist = euclidean_distances(kmeans.cluster_centers_)
-    #print "Incluster Distance = ", edist
+    print "Intercluster Distance = ", edist
+    tri_dists = edist[np.triu_indices(3, 1)]
+    max_dist, avg_dist, min_dist = tri_dists.max(), tri_dists.mean(), tri_dists.min()
+    print max_dist, avg_dist, min_dist
     new_insert = kmeans.predict (new_row)
     #print 'New Row belongs to cluster No.:', new_insert
 
@@ -151,7 +154,7 @@ def main(argv):
 
     # Read the given data
     #dfData = pd.read_csv('~/Documents/My DI/Metaptixiako/Dissertation/Dataset/sofia-air-quality-dataset/2017-07_bme280sof.csv', sep=',', header=0)
-    dfData = pd.read_csv('~/PycharmProjects/Dissertation/data.csv', sep=',', header=0)
+    dfData = pd.read_csv('~/PycharmProjects/Dissertation/data25k.csv', sep=',', header=0)
     ListNodes_ = []
     dn_avg = []
 
@@ -160,7 +163,7 @@ def main(argv):
         t_df = pd.DataFrame(dfData.iloc[(n*rows_per_node)+1:((n+1)*rows_per_node)+1,:])
         ListNodes_.append(dNode(n, t_df, columns, rows_per_node))
     pin = init_cluster(ListNodes_)
-    kmeans = KMeans(n_clusters=num_of_cluster, init='k-means++', max_iter=300, n_init=10, random_state=0)
+    kmeans = KMeans(n_clusters=num_of_cluster, init='k-means++', max_iter=300, n_init=10, random_state=1)
     kmeans.fit(pin)  # data is of shape [1000,]
     # learn the labels and the means
     labels = kmeans.predict(pin)  # labels of shape [1000,] with values 0<= i <= 9
@@ -176,6 +179,7 @@ def main(argv):
         new_row = dfData.iloc[[i]]
         if (random.random() <= phi):
             #REMOTE SAVE
+            dtime = time.time()
             print ('REMOTE SAVE')
             #cluster_id = cluster_dns(cl_arr, pin, new_row)
             cluster_id = kmeans.predict(new_row)
@@ -216,7 +220,8 @@ def main(argv):
                     r += 0.35
                 rewards[node.id] = 1 / (1 + math.exp((AA*time_passed.total_seconds())+(BB*r)))
                 #printNode(node)
-
+            #decision time
+            #print("------%s seconds------" % (time.time() - dtime))
             #insert data into node
             insert_new_row(ListNodes_[rewards.index(max(rewards))], new_row)
 
@@ -232,8 +237,15 @@ def main(argv):
             insert_new_row(ListNodes_[save_in], new_row)
 
         print '>' * 100
+    # edist = euclidean_distances(kmeans.cluster_centers_)
+    # print "Intercluster Distance = ", edist
+    # tri_dists = edist[np.triu_indices(3, 1)]
+    # max_dist, avg_dist, min_dist = tri_dists.max(), tri_dists.mean(), tri_dists.min()
+    # print max_dist, avg_dist, min_dist
+
 
 if __name__ == "__main__":
     start_time = time.time()
     main(sys.argv[1:])
+    #simulation time
     print("------%s seconds------"%(time.time() - start_time))
